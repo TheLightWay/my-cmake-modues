@@ -1,1 +1,1 @@
-my-cmake-modues
+My various modules for CMake

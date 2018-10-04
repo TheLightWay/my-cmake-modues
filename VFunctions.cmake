@@ -1,23 +1,3 @@
-#Copyright (C) 2014-2018 Nickolai  Vostrikov
-#
-#Licensed to the Apache Software Foundation( ASF ) under one
-#or more contributor license agreements.See the NOTICE file
-#distributed with this work for additional information
-#regarding copyright ownership.The ASF licenses this file
-#to you under the Apache License, Version 2.0 ( the
-#	"License" ); you may not use this file except in compliance
-#	with the License.You may obtain a copy of the License at
-#
-#	http ://www.apache.org/licenses/LICENSE-2.0
-#	or read LICENSE file in root repository directory
-#
-#Unless required by applicable law or agreed to in writing,
-#software distributed under the License is distributed on an
-#"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-#KIND, either express or implied.See the License for the
-#specific language governing permissions and limitations
-#under the License.
-
 function (DisallowIntreeBuilds)
   # Adapted from LLVM's toplevel CMakeLists.txt file
   if( CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR )
@@ -38,10 +18,86 @@ function (DisallowIntreeBuilds)
   endif()
 endfunction()
 
+function( MakeOutputDirectories )
+  set( PROJ_OUTPUT_DIR "${PROJECT_BINARY_DIR}" )
+
+  set( PROJ_OUTPUT_DIR_RUNTIME "${PROJ_OUTPUT_DIR}/bin" )
+  set( PROJ_OUTPUT_DIR_EXE "${PROJ_OUTPUT_DIR}/bin" )
+  set( PROJ_OUTPUT_DIR_ARH "${PROJ_OUTPUT_DIR}/lib" )
+  
+  file( MAKE_DIRECTORY ${PROJ_OUTPUT_DIR_RUNTIME} )
+  file( MAKE_DIRECTORY ${PROJ_OUTPUT_DIR_EXE} )
+  file( MAKE_DIRECTORY ${PROJ_OUTPUT_DIR_ARH} )
+
+  #debug config
+  set( PROJ_OUTPUT_DIR_RUNTIME_DEBUG "${PROJ_OUTPUT_DIR}/bin/debug" )
+  set( PROJ_OUTPUT_DIR_EXE_DEBUG "${PROJ_OUTPUT_DIR}/bin/debug" )
+  set( PROJ_OUTPUT_DIR_ARH_DEBUG "${PROJ_OUTPUT_DIR}/lib/debug" )
+  
+  file( MAKE_DIRECTORY ${PROJ_OUTPUT_DIR_RUNTIME_DEBUG} )
+  file( MAKE_DIRECTORY ${PROJ_OUTPUT_DIR_EXE_DEBUG} )
+  file( MAKE_DIRECTORY ${PROJ_OUTPUT_DIR_ARH_DEBUG} )
+  
+  set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG  "${PROJ_OUTPUT_DIR_RUNTIME_DEBUG}" PARENT_SCOPE )
+  set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG  "${PROJ_OUTPUT_DIR_RUNTIME_DEBUG}" PARENT_SCOPE )
+  set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG  "${PROJ_OUTPUT_DIR_ARH_DEBUG}"  PARENT_SCOPE )
+  
+  #release config
+  set( PROJ_OUTPUT_DIR_RUNTIME_RELEASE "${PROJ_OUTPUT_DIR}/bin/release" )
+  set( PROJ_OUTPUT_DIR_EXE_RELEASE "${PROJ_OUTPUT_DIR}/bin/release" )
+  set( PROJ_OUTPUT_DIR_ARH_RELEASE "${PROJ_OUTPUT_DIR}/lib/release" )
+
+  file( MAKE_DIRECTORY ${PROJ_OUTPUT_DIR_RUNTIME_RELEASE} )
+  file( MAKE_DIRECTORY ${PROJ_OUTPUT_DIR_EXE_RELEASE} )
+  file( MAKE_DIRECTORY ${PROJ_OUTPUT_DIR_ARH_RELEASE} )
+  
+  set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${PROJ_OUTPUT_DIR_RUNTIME_RELEASE}" PARENT_SCOPE )
+  set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${PROJ_OUTPUT_DIR_RUNTIME_RELEASE}" PARENT_SCOPE )
+  set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE  "${PROJ_OUTPUT_DIR_ARH_RELEASE}" PARENT_SCOPE )
+
+  #minsizerel config
+  set( PROJ_OUTPUT_DIR_RUNTIME_MINSIZEREL "${PROJ_OUTPUT_DIR}/bin/minsizerel" )
+  set( PROJ_OUTPUT_DIR_EXE_MINSIZEREL "${PROJ_OUTPUT_DIR}/bin/minsizerel" )
+  set( PROJ_OUTPUT_DIR_ARH_MINSIZEREL "${PROJ_OUTPUT_DIR}/lib/minsizerel" )
+
+  file( MAKE_DIRECTORY ${PROJ_OUTPUT_DIR_RUNTIME_MINSIZEREL} )
+  file( MAKE_DIRECTORY ${PROJ_OUTPUT_DIR_EXE_MINSIZEREL} )
+  file( MAKE_DIRECTORY ${PROJ_OUTPUT_DIR_ARH_MINSIZEREL} )
+  
+  set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${PROJ_OUTPUT_DIR_RUNTIME_MINSIZEREL}" PARENT_SCOPE )
+  set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL "${PROJ_OUTPUT_DIR_RUNTIME_MINSIZEREL}" PARENT_SCOPE )
+  set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL  "${PROJ_OUTPUT_DIR_ARH_MINSIZEREL}" PARENT_SCOPE )
+
+  #relwithdebinfo config
+  set( PROJ_OUTPUT_DIR_RUNTIME_RELWITHDEBINFO "${PROJ_OUTPUT_DIR}/bin/relwithdebinfo" )
+  set( PROJ_OUTPUT_DIR_EXE_RELWITHDEBINFO "${PROJ_OUTPUT_DIR}/bin/relwithdebinfo" )
+  set( PROJ_OUTPUT_DIR_ARH_RELWITHDEBINFO "${PROJ_OUTPUT_DIR}/lib/relwithdebinfo" )
+
+  file( MAKE_DIRECTORY ${PROJ_OUTPUT_DIR_RUNTIME_RELWITHDEBINFO} )
+  file( MAKE_DIRECTORY ${PROJ_OUTPUT_DIR_EXE_RELWITHDEBINFO} )
+  file( MAKE_DIRECTORY ${PROJ_OUTPUT_DIR_ARH_RELWITHDEBINFO} )
+  
+  set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJ_OUTPUT_DIR_RUNTIME_RELWITHDEBINFO}" PARENT_SCOPE )
+  set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJ_OUTPUT_DIR_RUNTIME_RELWITHDEBINFO}" PARENT_SCOPE )
+  set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO  "${PROJ_OUTPUT_DIR_ARH_RELWITHDEBINFO}" PARENT_SCOPE )
+
+  set( CMAKE_DEBUG_POSTFIX "d" )
+  set( CMAKE_RELWITHDEBINFO_POSTFIX "rd" )
+  set( CMAKE_RELEASE_POSTFIX "" )
+  set( CMAKE_MINSIZEREL_POSTFIX "msr" )
+endfunction( )
 
 macro( MarkAsInternal _var )
 	set ( ${_var} ${${_var}} CACHE INTERNAL "hide this!" FORCE )
 endmacro( MarkAsInternal _var )
+
+macro( SetupCompilerWarnings _var )
+  if(MSVC)
+    target_compile_options( ${_var} PRIVATE /W4 )
+  else()
+    target_compile_options( ${_var} PRIVATE -Wall -Wextra -pedantic -Werror)
+  endif()
+endmacro( SetupCompilerWarnings _var )
 
 set( CLONE_THRIDPARTY_DIR "${PROJECT_BINARY_DIR}/ThridPartyProjClone" CACHE PATH INTERNAL )
 set( INSTALL_THRIDPARTY_DIR "${PROJECT_BINARY_DIR}/ThridPartyProjInstall" CACHE PATH INTERNAL )
@@ -49,19 +105,49 @@ set( INSTALL_THRIDPARTY_DIR "${PROJECT_BINARY_DIR}/ThridPartyProjInstall" CACHE 
 file( MAKE_DIRECTORY ${CLONE_THRIDPARTY_DIR} )
 file( MAKE_DIRECTORY ${INSTALL_THRIDPARTY_DIR} )
 
-function( BuildExternalProjectFromGit target url tag) #FOLLOWING ARGUMENTS are the CMAKE_ARGS of ExternalProject_Add
+
+function( BuildExternalProjectFromGit target url tag ) #FOLLOWING ARGUMENTS are the CMAKE_ARGS of ExternalProject_Add
 	
 	execute_process( COMMAND git clone ${url} WORKING_DIRECTORY ${CLONE_THRIDPARTY_DIR} )
 	execute_process( COMMAND git checkout ${tag} WORKING_DIRECTORY ${CLONE_THRIDPARTY_DIR}/${target} )
 	
 	file( MAKE_DIRECTORY ${CLONE_THRIDPARTY_DIR}/${target}/build )
 
-    execute_process(COMMAND ${CMAKE_COMMAND}  -G ${CMAKE_GENERATOR} -DCMAKE_INSTALL_PREFIX=${INSTALL_THRIDPARTY_DIR}/${target} ..
-        WORKING_DIRECTORY ${CLONE_THRIDPARTY_DIR}/${target}/build
-        )
-    execute_process(COMMAND ${CMAKE_COMMAND} --build . --target install --config Release
-        WORKING_DIRECTORY ${CLONE_THRIDPARTY_DIR}/${target}/build
-        )
+  execute_process(COMMAND ${CMAKE_COMMAND}  -G ${CMAKE_GENERATOR} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_THRIDPARTY_DIR}/${target} ..
+      WORKING_DIRECTORY ${CLONE_THRIDPARTY_DIR}/${target}/build
+      )
+  execute_process(COMMAND ${CMAKE_COMMAND} --build . --target install --config Release
+      WORKING_DIRECTORY ${CLONE_THRIDPARTY_DIR}/${target}/build
+      )
+  file( GLOB BINFILES ${INSTALL_THRIDPARTY_DIR}/${target}/bin/* )
+  #message( STATUS "binfiles: ${BINFILES}")
+  file( COPY ${BINFILES} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG} )
+  file( COPY ${BINFILES} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE} )
+  file( COPY ${BINFILES} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL} )
+  file( COPY ${BINFILES} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO} )
+endfunction()
+
+function( BuildExternalProjectFromZip target zip_file_path ) #FOLLOWING ARGUMENTS are the CMAKE_ARGS of ExternalProject_Add
+	
+  execute_process(
+  COMMAND ${CMAKE_COMMAND} -E tar xzf ${zip_file_path}
+  WORKING_DIRECTORY ${CLONE_THRIDPARTY_DIR}
+  )
+	
+	file( MAKE_DIRECTORY ${CLONE_THRIDPARTY_DIR}/${target}/build )
+
+  execute_process(COMMAND ${CMAKE_COMMAND}  -G ${CMAKE_GENERATOR} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_THRIDPARTY_DIR}/${target} ..
+      WORKING_DIRECTORY ${CLONE_THRIDPARTY_DIR}/${target}/build
+      )
+  execute_process(COMMAND ${CMAKE_COMMAND} --build . --target install --config Release
+      WORKING_DIRECTORY ${CLONE_THRIDPARTY_DIR}/${target}/build
+      )
+  file( GLOB BINFILES ${INSTALL_THRIDPARTY_DIR}/${target}/bin/* )
+  #message( STATUS "binfiles: ${BINFILES}")
+  file( COPY ${BINFILES} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG} )
+  file( COPY ${BINFILES} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE} )
+  file( COPY ${BINFILES} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL} )
+  file( COPY ${BINFILES} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO} )
 endfunction()
 
 

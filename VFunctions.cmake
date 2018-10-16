@@ -19,7 +19,7 @@ function (DisallowIntreeBuilds)
   endif()
 endfunction()
 
-function( MakeOutputDirectories )
+function( SetupOutputDirectories )
   set( PROJ_OUTPUT_DIR "${PROJECT_BINARY_DIR}" )
 
   set( PROJ_OUTPUT_DIR_RUNTIME "${PROJ_OUTPUT_DIR}/bin" )

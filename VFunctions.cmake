@@ -1,3 +1,4 @@
+
 function (DisallowIntreeBuilds)
   # Adapted from LLVM's toplevel CMakeLists.txt file
   if( CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR )
